@@ -20,6 +20,7 @@ public class TPED_Reader extends JFrame{
 	private int height;
 	private int width;
 	private JButton fileButton;
+	private JButton toggleDisabledButton;
 	private JLabel fileLabel;
 	private JLabel idLabel;
 	private JLabel totalMarkersLabel;
@@ -160,6 +161,20 @@ public class TPED_Reader extends JFrame{
 		return returnChromosome;
 	}
 	
+	//returns the index of a chromosome in a list that matches the id, returns -1 if no match is found. 
+	public Integer FindIndexByID(List<Chromosome> _list, String _id) {
+		int returnInt = -1;
+		
+		for(int i = 0; i < _list.size(); i++) {
+			if(_list.get(i).id.equals(_id)) {
+				returnInt = i;
+				break;
+			}
+		}
+		
+		return returnInt;
+	}
+	
 	//add the counts for each chromosome together to fill out the "total" chromosome, which is at index 0. 
 	private void CalculateTotalChromosome() {
 		Chromosome totalChromo = new Chromosome("total"); //this chromosome will replace the previous "total" chromosome. 
@@ -187,11 +202,6 @@ public class TPED_Reader extends JFrame{
 			}
 		}
 		chromosomes.set(0, totalChromo);
-	}
-	
-	//display a chromosome's information when selected. 
-	private void ChromosomeSelected() {
-		
 	}
 	
 	//class constructor, all code here runs when the class if first instantiated. This is where all UI items are defined and created. 
@@ -243,14 +253,46 @@ public class TPED_Reader extends JFrame{
 					}
 				}
 				catch(Exception E){
-					PopupMessage(E.toString());
+					PopupMessage("Error: " + E.toString());
 					TPEDFile = null;
 					fileLabel.setText("No TPED file.");
-					System.out.println(E);
 				}
 			}
 		});
 		getContentPane().add(fileButton);
+		
+		toggleDisabledButton = new JButton("Disable Chromosome");
+		toggleDisabledButton.setBounds(10, 670, 160, 50);
+		toggleDisabledButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					if(selectedChromosome == null) {
+						PopupMessage("No chromosome has been selected");
+					}
+					else if(selectedChromosome.id.equals("total")) {
+						PopupMessage("'total' cannot be disabled");
+					}
+					else {
+						if(selectedChromosome.disabled) {
+							selectedChromosome.disabled = false;
+							PopupMessage("chromosome enabled: " + selectedChromosome.id + " will now be used for 'total' calculations again.");
+							toggleDisabledButton.setText("Disable Chromosome");
+							chromosomeListModel.set(chromosomeList.getSelectedIndex(), selectedChromosome.id);
+						}
+						else {
+							selectedChromosome.disabled = true;
+							PopupMessage("chromosome disabled: " + selectedChromosome.id + " will no longer be used for 'total' calculations.");
+							toggleDisabledButton.setText("Enable Chromosome");
+							chromosomeListModel.set(chromosomeList.getSelectedIndex(), selectedChromosome.id + " - Disabled");
+						}
+					}
+				}
+				catch(Exception E){
+					PopupMessage("Error: " + E.toString());
+				}
+			}
+		});
+		getContentPane().add(toggleDisabledButton);
 		
 		//set up lists. 
 		chromosomeList = new JList<String>(chromosomeListModel);
@@ -279,6 +321,14 @@ public class TPED_Reader extends JFrame{
 					//if the selcted chromosome is the "total" chromosome, calculate it. 
 					if(selectedChromosome.id.equals("total")) {
 						CalculateTotalChromosome();
+					}
+					
+					//set the text of the toggleDisabledButton to reflect the state of the selected chromosome. 
+					if(selectedChromosome.disabled) {
+						toggleDisabledButton.setText("Enable Chromosome");
+					}
+					else {
+						toggleDisabledButton.setText("Disable Chromosome");
 					}
 					
 					idLabel.setText("Chromosome: " + selectedChromosome.id);
