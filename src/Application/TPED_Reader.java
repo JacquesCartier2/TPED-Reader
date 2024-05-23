@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -22,20 +24,12 @@ public class TPED_Reader extends JFrame{
 	private JLabel idLabel;
 	private JLabel totalMarkersLabel;
 	private JLabel nucleotideLabel;
-	private JLabel homozygousNucleotideLabel;
-	private JLabel heterozygousNucleotideLabel;
 	private JList<String> chromosomeList;
 	private DefaultListModel<String> chromosomeListModel;
 	private JList<String> nucleotideList;
 	private DefaultListModel<String> nucleotideListModel;
-	private JList<String> homozygousNucleotideList;
-	private DefaultListModel<String> homozygousNucleotideListModel;
-	private JList<String> heterozygousNucleotideList;
-	private DefaultListModel<String> heterozygousNucleotideListModel;
 	private JScrollPane chromosomeListScroller;
 	private JScrollPane nucleotideListScroller;
-	private JScrollPane homozygousNucleotideListScroller;
-	private JScrollPane heterozygousNucleotideListScroller;
 	private File TPEDFile;
 	private ArrayList<Chromosome> chromosomes;
 	private Chromosome selectedChromosome;
@@ -78,11 +72,13 @@ public class TPED_Reader extends JFrame{
 		Chromosome currentChromosome = null; //chromosome that contains the marker being processed. 
 		String line = "";
 		String currentID; //id of the current chromosome. 
-		int currentIndex = 0; //returnList index of the current chromosome. 
 		boolean alreadyContains;
 		
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(_file));
+			
+			//add the "total" chromosome to the start of the list.
+			returnList.add(new Chromosome("total"));
 			
 			while ((line = br.readLine()) != null)   //go through each line in the file, each line represents a genetic marker. 
 			{
@@ -97,13 +93,11 @@ public class TPED_Reader extends JFrame{
 					if(returnList.get(i).id.equals(currentID)) {
 						alreadyContains = true;
 						currentChromosome = returnList.get(i);
-						currentIndex = i;
 					}
 				}
 				if(alreadyContains == false) {
 					returnList.add(new Chromosome(currentID));
 					currentChromosome = returnList.get(returnList.size() - 1);
-					currentIndex = (returnList.size() - 1);
 				}
 				
 				//increase the total marker count for the chromosome.
@@ -114,8 +108,8 @@ public class TPED_Reader extends JFrame{
 					IncreaseHash(currentChromosome.homozygousNucleotides, splitLine[4], 2);
 				}
 				else {
-					IncreaseHash(currentChromosome.homozygousNucleotides, splitLine[4], 1);
-					IncreaseHash(currentChromosome.homozygousNucleotides, splitLine[5], 1);
+					IncreaseHash(currentChromosome.heterozygousNucleotides, splitLine[4], 1);
+					IncreaseHash(currentChromosome.heterozygousNucleotides, splitLine[5], 1);
 				}
 				
 				//increase the nucleotide counts for each nucleotide on the marker. 
@@ -134,6 +128,7 @@ public class TPED_Reader extends JFrame{
 		for(Chromosome chromosome : returnList) {
 			chromosome.CalculateTotals();
 		}
+		
 		return returnList;
 	}
 	
@@ -151,6 +146,49 @@ public class TPED_Reader extends JFrame{
 		}
 	}
 	
+	//returns the chromosome in a list that matches the id, returns null if no match is found. 
+	public Chromosome FindChromosomeByID(List<Chromosome> _list, String _id) {
+		Chromosome returnChromosome = null;
+		
+		for(Chromosome chromo : _list) {
+			if(chromo.id.equals(_id)) {
+				returnChromosome = chromo;
+				break;
+			}
+		}
+		
+		return returnChromosome;
+	}
+	
+	//add the counts for each chromosome together to fill out the "total" chromosome, which is at index 0. 
+	private void CalculateTotalChromosome() {
+		Chromosome totalChromo = new Chromosome("total"); //this chromosome will replace the previous "total" chromosome. 
+		for(Chromosome chromo : chromosomes) {
+			//exclude disabled chromosomes and the "total" chromosome from calculation. 
+			if(chromo.disabled == true || chromo.id.equals("total")) {
+				continue;
+			}
+			
+			totalChromo.totalMarkers += chromo.totalMarkers;
+
+			for(String key : chromo.nucleotides.keySet()) {
+				if(totalChromo.nucleotides.containsKey(key) == false) {
+					totalChromo.nucleotides.put(key, 0);
+					totalChromo.homozygousNucleotides.put(key, 0);
+					totalChromo.heterozygousNucleotides.put(key, 0);
+				}
+				
+				totalChromo.nucleotides.put(key, ( totalChromo.nucleotides.get(key) + chromo.nucleotides.get(key) ) );
+				if(chromo.homozygousNucleotides.containsKey(key)) {
+					totalChromo.homozygousNucleotides.put(key, ( totalChromo.homozygousNucleotides.get(key) + chromo.homozygousNucleotides.get(key) ) );
+				}
+				if(chromo.heterozygousNucleotides.containsKey(key)) {
+					totalChromo.heterozygousNucleotides.put(key, ( totalChromo.heterozygousNucleotides.get(key) + chromo.heterozygousNucleotides.get(key) ) );				}	
+			}
+		}
+		chromosomes.set(0, totalChromo);
+	}
+	
 	//display a chromosome's information when selected. 
 	private void ChromosomeSelected() {
 		
@@ -163,8 +201,6 @@ public class TPED_Reader extends JFrame{
 		
 		this.chromosomeListModel = new DefaultListModel<String>();
 		this.nucleotideListModel = new DefaultListModel<String>();
-		this.homozygousNucleotideListModel = new DefaultListModel<String>();
-		this.heterozygousNucleotideListModel = new DefaultListModel<String>();
 		
 		//required to make the program fully shut down when closed. 
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -179,27 +215,16 @@ public class TPED_Reader extends JFrame{
 		getContentPane().add(fileLabel);
 		
 		idLabel = new JLabel("Chromosome: none selected");
-		idLabel.setBounds(220, 11, 347, 28);
+		idLabel.setBounds(220, 38, 347, 28);
 		getContentPane().add(idLabel);
 		
 		totalMarkersLabel = new JLabel("Total markers: ");
-		totalMarkersLabel.setBounds(220, 38, 160, 28);
+		totalMarkersLabel.setBounds(220, 60, 160, 28);
 		getContentPane().add(totalMarkersLabel);
 		
-		nucleotideLabel = new JLabel("Nucleotides");
-		nucleotideLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		nucleotideLabel.setBounds(220, 62, 100, 48);
+		nucleotideLabel = new JLabel("Nucleotides in the selected chromosome:");
+		nucleotideLabel.setBounds(220, 82, 300, 28);
 		getContentPane().add(nucleotideLabel);
-		
-		homozygousNucleotideLabel = new JLabel("Homozygous");
-		homozygousNucleotideLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		homozygousNucleotideLabel.setBounds(345, 62, 100, 48);
-		getContentPane().add(homozygousNucleotideLabel);
-		
-		heterozygousNucleotideLabel = new JLabel("Heterozygous");
-		heterozygousNucleotideLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		heterozygousNucleotideLabel.setBounds(467, 62, 100, 48);
-		getContentPane().add(heterozygousNucleotideLabel);
 		
 		//set up buttons.
 		fileButton = new JButton("Open TPED File");
@@ -227,15 +252,42 @@ public class TPED_Reader extends JFrame{
 		});
 		getContentPane().add(fileButton);
 		
-		
-		
-		
 		//set up lists. 
 		chromosomeList = new JList<String>(chromosomeListModel);
 		chromosomeList.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				try{
 					//this block happens when a chromosome in the list is clicked. 
+					
+					//isolate the chromosome ID from the selected value. This is used to remove things such as the " - Disabled" indicator. 
+					String[] splitItem = chromosomeList.getSelectedValue().split(" ");
+					String chromosomeID = splitItem[0];
+					
+					//if the selected chromosome has not changed then do nothing. 
+					if(selectedChromosome != null && selectedChromosome.id.equals("total") == false && selectedChromosome.id.equals(chromosomeID)) {
+						return;
+					}
+					
+					selectedChromosome = FindChromosomeByID(chromosomes, chromosomeID);
+					
+					//if the selected chromosome could not be found in the chromosomes list, set the selectedChromosome to an empty chromosome and display an error popup. 
+					if(selectedChromosome == null) {
+						selectedChromosome = new Chromosome("");
+						PopupMessage("Error: chromosome could not be found in the data.");
+					}
+					
+					//if the selcted chromosome is the "total" chromosome, calculate it. 
+					if(selectedChromosome.id.equals("total")) {
+						CalculateTotalChromosome();
+					}
+					
+					idLabel.setText("Chromosome: " + selectedChromosome.id);
+					totalMarkersLabel.setText("Total Markers: " + selectedChromosome.totalMarkers);
+					
+					nucleotideListModel.clear();
+					Set<String> keys = selectedChromosome.nucleotides.keySet();
+					
+					nucleotideListModel.addElement("total: " + selectedChromosome.nucleotides.get("total") + " - " + selectedChromosome.homozygousNucleotides.get("total") + " homozygous - " + selectedChromosome.heterozygousNucleotides.get("total") + " heterozygous.");
 				}
 				catch(Exception E) {
 					
@@ -248,18 +300,9 @@ public class TPED_Reader extends JFrame{
 		
 		nucleotideList = new JList<String>(nucleotideListModel);
 		nucleotideListScroller = new JScrollPane(nucleotideList);
-		nucleotideListScroller.setBounds(220, 110, 100, 422);
+		nucleotideListScroller.setBounds(220, 110, 300, 422);
 		getContentPane().add(nucleotideListScroller);
-		
-		homozygousNucleotideList = new JList<String>(homozygousNucleotideListModel);
-		homozygousNucleotideListScroller = new JScrollPane(homozygousNucleotideList);
-		homozygousNucleotideListScroller.setBounds(345, 110, 100, 422);
-		getContentPane().add(homozygousNucleotideListScroller);
-		
-		heterozygousNucleotideList = new JList<String>(heterozygousNucleotideListModel);
-		heterozygousNucleotideListScroller = new JScrollPane(heterozygousNucleotideList);
-		heterozygousNucleotideListScroller.setBounds(467, 109, 100, 422);
-		getContentPane().add(heterozygousNucleotideListScroller);
+
 	}
 		
 		
