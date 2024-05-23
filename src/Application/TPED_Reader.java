@@ -196,8 +196,8 @@ public class TPED_Reader extends JFrame{
 	
 	//class constructor, all code here runs when the class if first instantiated. This is where all UI items are defined and created. 
 	public TPED_Reader() {
-		this.width = 600;
-		this.height = 600;
+		this.width = 1200;
+		this.height = 800;
 		
 		this.chromosomeListModel = new DefaultListModel<String>();
 		this.nucleotideListModel = new DefaultListModel<String>();
@@ -285,22 +285,45 @@ public class TPED_Reader extends JFrame{
 					totalMarkersLabel.setText("Total Markers: " + selectedChromosome.totalMarkers);
 					
 					nucleotideListModel.clear();
-					Set<String> keys = selectedChromosome.nucleotides.keySet();
 					
-					nucleotideListModel.addElement("total: " + selectedChromosome.nucleotides.get("total") + " - " + selectedChromosome.homozygousNucleotides.get("total") + " homozygous - " + selectedChromosome.heterozygousNucleotides.get("total") + " heterozygous.");
+					nucleotideListModel.addElement("total: " + selectedChromosome.nucleotides.get("total") + ",   " + selectedChromosome.homozygousNucleotides.get("total") + " homozygous,   " + selectedChromosome.heterozygousNucleotides.get("total") + " heterozygous.");
+					
+					int homozygous = 0;
+					int heterozygous = 0;
+					for(String key : selectedChromosome.nucleotides.keySet()) {
+						if(key.equals("total")) {
+							continue;
+						}
+						
+						if(selectedChromosome.homozygousNucleotides.containsKey(key)) {
+							homozygous = selectedChromosome.homozygousNucleotides.get(key);
+						}
+						else {
+							homozygous = 0;
+						}
+						
+						if(selectedChromosome.heterozygousNucleotides.containsKey(key)) {
+							heterozygous = selectedChromosome.heterozygousNucleotides.get(key);
+						}
+						else {
+							heterozygous = 0;
+						}
+						
+						nucleotideListModel.addElement(key + ": " + selectedChromosome.nucleotides.get(key) + " total,   " + homozygous + " homozygous,   " + heterozygous + " heterozygous.");
+					}
 				}
 				catch(Exception E) {
-					
+					PopupMessage("Error: " + E);
 				}
 			}
 		});
 		chromosomeListScroller = new JScrollPane(chromosomeList);
-		chromosomeListScroller.setBounds(10, 109, 160, 422);
+		chromosomeListScroller.setBounds(10, 109, 160, 550);
 		getContentPane().add(chromosomeListScroller);
 		
 		nucleotideList = new JList<String>(nucleotideListModel);
 		nucleotideListScroller = new JScrollPane(nucleotideList);
-		nucleotideListScroller.setBounds(220, 110, 300, 422);
+		nucleotideListScroller.setBounds(220, 110, 400, 550);
 		getContentPane().add(nucleotideListScroller);
 
 	}
