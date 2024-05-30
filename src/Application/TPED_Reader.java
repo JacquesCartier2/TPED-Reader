@@ -24,6 +24,7 @@ public class TPED_Reader extends JFrame{
 	private JLabel fileLabel;
 	private JLabel idLabel;
 	private JLabel totalMarkersLabel;
+	private JLabel nucleotideLabel;
 	private JLabel nucleotidesListLabel;
 	private JLabel nucleotideChromosomesListLabel;
 	private JLabel nucleotideSelectionLabel;
@@ -336,6 +337,10 @@ public class TPED_Reader extends JFrame{
 		totalMarkersLabel.setBounds(220, 60, 160, 28);
 		getContentPane().add(totalMarkersLabel);
 		
+		nucleotideLabel = new JLabel("Nucleotide: none selected");
+		nucleotideLabel.setBounds(985, 38, 347, 28);
+		getContentPane().add(nucleotideLabel);
+		
 		nucleotidesListLabel = new JLabel("Nucleotides in the selected chromosome:");
 		nucleotidesListLabel.setBounds(220, 82, 300, 28);
 		getContentPane().add(nucleotidesListLabel);
@@ -368,6 +373,7 @@ public class TPED_Reader extends JFrame{
 						fileLabel.setText(TPEDFile.getName());
 						chromosomes = GetChromosomesFromFile(TPEDFile);
 						UpdateSelectionLists();
+						CalculateTotalChromosome();
 					}
 				}
 				catch(Exception E){
@@ -474,6 +480,8 @@ public class TPED_Reader extends JFrame{
 				try{
 					//this block happens when a nucleotide in the list is clicked. 
 					UpdateNucleotideChromosomesList();
+					
+					nucleotideLabel.setText("Nucleotide: " + nucleotideSelectionList.getSelectedValue());
 				}
 				catch(Exception E) {
 					PopupMessage("Error: " + E);
