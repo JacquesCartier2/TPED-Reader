@@ -479,6 +479,9 @@ public class TPED_Reader extends JFrame{
 			public void valueChanged(ListSelectionEvent e) {
 				try{
 					//this block happens when a nucleotide in the list is clicked. 
+					//total chromosome must be calculated each time in order to reflect any disabling/enabling of chromosomes that occured without selecting the total chromosome. 
+					CalculateTotalChromosome();
+					
 					UpdateNucleotideChromosomesList();
 					
 					nucleotideLabel.setText("Nucleotide: " + nucleotideSelectionList.getSelectedValue());
