@@ -310,7 +310,7 @@ public class TPED_Reader extends JFrame{
 	//class constructor, all code here runs when the class if first instantiated. This is where all UI items are defined and created. 
 	public TPED_Reader() {
 		this.width = 1400;
-		this.height = 800;
+		this.height = 850;
 		
 		this.chromosomeSelectionListModel = new DefaultListModel<String>();
 		this.nucleotideListModel = new DefaultListModel<String>();
@@ -330,38 +330,38 @@ public class TPED_Reader extends JFrame{
 		getContentPane().add(fileLabel);
 		
 		idLabel = new JLabel("Chromosome: none selected");
-		idLabel.setBounds(220, 38, 347, 28);
+		idLabel.setBounds(220, 88, 347, 28);
 		getContentPane().add(idLabel);
 		
 		totalMarkersLabel = new JLabel("Total markers: ");
-		totalMarkersLabel.setBounds(220, 60, 160, 28);
+		totalMarkersLabel.setBounds(220, 110, 160, 28);
 		getContentPane().add(totalMarkersLabel);
 		
 		nucleotideLabel = new JLabel("Nucleotide: none selected");
-		nucleotideLabel.setBounds(985, 38, 347, 28);
+		nucleotideLabel.setBounds(985, 88, 347, 28);
 		getContentPane().add(nucleotideLabel);
 		
 		nucleotidesListLabel = new JLabel("Nucleotides in the selected chromosome:");
-		nucleotidesListLabel.setBounds(220, 82, 300, 28);
+		nucleotidesListLabel.setBounds(220, 132, 300, 28);
 		getContentPane().add(nucleotidesListLabel);
 		
 		nucleotideChromosomesListLabel = new JLabel("Nucleotides of selected type in each chromosome:");
-		nucleotideChromosomesListLabel.setBounds(985, 82, 300, 28);
+		nucleotideChromosomesListLabel.setBounds(985, 132, 300, 28);
 		getContentPane().add(nucleotideChromosomesListLabel);
 		
 		nucleotideSelectionLabel = new JLabel("Nucleotide Selection");
 		nucleotideSelectionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		nucleotideSelectionLabel.setBounds(775, 80, 160, 28);
+		nucleotideSelectionLabel.setBounds(775, 130, 160, 28);
 		getContentPane().add(nucleotideSelectionLabel);
 		
 		chromosomeSelectionLabel = new JLabel("Chromosome Selection");
 		chromosomeSelectionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		chromosomeSelectionLabel.setBounds(10, 80, 160, 28);
+		chromosomeSelectionLabel.setBounds(10, 130, 160, 28);
 		getContentPane().add(chromosomeSelectionLabel);
 		
 		//set up buttons.
 		fileButton = new JButton("Open TPED File");
-		fileButton.setBounds(612, 38, 160, 50);
+		fileButton.setBounds(612, 40, 160, 50);
 		fileButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -386,7 +386,7 @@ public class TPED_Reader extends JFrame{
 		getContentPane().add(fileButton);
 		
 		toggleDisabledButton = new JButton("Disable Chromosome");
-		toggleDisabledButton.setBounds(10, 680, 160, 50);
+		toggleDisabledButton.setBounds(10, 730, 160, 50);
 		toggleDisabledButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -466,12 +466,12 @@ public class TPED_Reader extends JFrame{
 			}
 		});
 		chromosomeSelectionListScroller = new JScrollPane(chromosomeSelectionList);
-		chromosomeSelectionListScroller.setBounds(10, 110, 160, 550);
+		chromosomeSelectionListScroller.setBounds(10, 160, 160, 550);
 		getContentPane().add(chromosomeSelectionListScroller);
 		
 		nucleotideList = new JList<String>(nucleotideListModel);
 		nucleotideListScroller = new JScrollPane(nucleotideList);
-		nucleotideListScroller.setBounds(210, 110, 400, 550);
+		nucleotideListScroller.setBounds(210, 160, 400, 550);
 		getContentPane().add(nucleotideListScroller);
 		
 		nucleotideSelectionList = new JList<String>(nucleotideSelectionListModel);
@@ -492,12 +492,12 @@ public class TPED_Reader extends JFrame{
 			}
 		});
 		nucleotideSelectionListScroller = new JScrollPane(nucleotideSelectionList);
-		nucleotideSelectionListScroller.setBounds(775, 109, 160, 550);
+		nucleotideSelectionListScroller.setBounds(775, 159, 160, 550);
 		getContentPane().add(nucleotideSelectionListScroller);
 		
 		nucleotideChromosomesList = new JList<String>(nucleotideChromosomesListModel);
 		nucleotideChromosomesListScroller = new JScrollPane(nucleotideChromosomesList);
-		nucleotideChromosomesListScroller.setBounds(975, 110, 400, 550);
+		nucleotideChromosomesListScroller.setBounds(975, 160, 400, 550);
 		getContentPane().add(nucleotideChromosomesListScroller);
 
 	}
