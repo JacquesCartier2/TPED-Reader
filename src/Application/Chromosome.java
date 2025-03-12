@@ -6,7 +6,7 @@ import java.util.List;
 public class Chromosome {
 	String id;
 	//hashmaps (aka dictionaries) are used to store numbers with their respective markers, for example in nucleotides a key of "A" and value of "10" indicated that the chromosome has 10 A nucleotides. 
-	HashMap<String,Integer> nucleotides; //amount of nucleotides of a certain type.
+	HashMap<String,Integer> nucleotides; //total amount of nucleotides of a certain type.
 	HashMap<String,Integer> homozygousNucleotides; //amount of nucleotides in homozygous sites for each nucleotide type. 
 	HashMap<String,Integer> heterozygousNucleotides; //amount of nucleotides in heterozygous sites for each nucleotide type. 
 	int totalMarkers; //total amount of markers for the chromosome. 
@@ -25,27 +25,19 @@ public class Chromosome {
 	//adds a "total" key to all hashmaps and stores the total counts for all other entries under it. 
 	public void CalculateTotals() {
 		int amountToAdd = 0;
-		nucleotides.put("total", 0);
-		for(String key : nucleotides.keySet()) {
+		CalculateTotal(nucleotides);
+		CalculateTotal(homozygousNucleotides);
+		CalculateTotal(heterozygousNucleotides);
+	}
+	
+	private void CalculateTotal(HashMap<String,Integer> _hashMap) {
+		int totalAmount = 0;
+		for(String key : _hashMap.keySet()) {
 			if(key.equals("total") == false) {
-				amountToAdd = nucleotides.get("total") + nucleotides.get(key);
-				nucleotides.put("total", amountToAdd);
+				totalAmount += _hashMap.get(key);
 			}
 		}
-		homozygousNucleotides.put("total", 0);
-		for(String key : homozygousNucleotides.keySet()) {
-			if(key.equals("total") == false) {
-				amountToAdd = homozygousNucleotides.get("total") + homozygousNucleotides.get(key);
-				homozygousNucleotides.put("total", amountToAdd);
-			}
-		}
-		heterozygousNucleotides.put("total", 0);
-		for(String key : heterozygousNucleotides.keySet()) {
-			if(key.equals("total") == false) {
-				amountToAdd = heterozygousNucleotides.get("total") + heterozygousNucleotides.get(key);
-				heterozygousNucleotides.put("total", amountToAdd);
-			}
-		}
+		_hashMap.put("total", totalAmount);
 	}
 	
 	Chromosome(String _id){
